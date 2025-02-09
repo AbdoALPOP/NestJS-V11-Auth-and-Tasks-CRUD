@@ -20,12 +20,13 @@ export class AuthService {
   ) {}
 
   async createUser(AuthDot: AuthDot): Promise<User> {
-    const { username, password } = AuthDot;
+    const { username, password, email } = AuthDot;
     const salt = 10;
     const hashedPassword = await bcrypt.hash(password, salt);
     const user = this.authRepository.create({
       username,
       password: hashedPassword,
+      email,
     });
     await this.authRepository.save(user);
     return user;
@@ -42,10 +43,10 @@ export class AuthService {
   }
 
   async login(AuthDot: AuthDot): Promise<{ accessToken: string }> {
-    const { username, password } = AuthDot;
-    const user = await this.authRepository.findOne({ where: { username } });
+    const { email, password } = AuthDot;
+    const user = await this.authRepository.findOne({ where: { email } });
     if (user && (await bcrypt.compare(password, user.password))) {
-      const payload: JwtPayload = { username };
+      const payload: JwtPayload = { email };
       const accessToken = await this.jwtPayload.sign(payload);
       return { accessToken };
     } else {

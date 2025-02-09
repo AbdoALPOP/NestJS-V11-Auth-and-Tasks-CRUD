@@ -5,9 +5,9 @@ import {
   Get,
   Param,
   ParseIntPipe,
-  ParseUUIDPipe,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { TasksService } from './tasks.service';
@@ -17,6 +17,8 @@ import { AuthGuard } from '@nestjs/passport';
 import { GetUser } from 'src/auth/get-user.decorator';
 import { User } from 'src/auth/auth.entity';
 import { Task } from './task.entity';
+import { Pagination } from '@supabase/supabase-js';
+import { PaginationDto } from 'src/dot/pagination.dto';
 
 @Controller('tasks')
 @UseGuards(AuthGuard())
@@ -28,8 +30,11 @@ export class TasksController {
     return this.tasksService.create(createTaskDto, user);
   }
   @Get()
-  getAllTasks(@GetUser() user: User): Promise<Task[]> {
-    return this.tasksService.getAllTasks(user);
+  getAllTasks(
+    @Query() paginationDto: PaginationDto,
+    @GetUser() user: User,
+  ): Promise<Task[]> {
+    return this.tasksService.getAllTasks(user, paginationDto);
   }
   @Get(':id')
   getTaskById(@Param('id', ParseIntPipe) id: number, @GetUser() user: User) {
